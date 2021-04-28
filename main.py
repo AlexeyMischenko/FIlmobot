@@ -6,8 +6,6 @@ from telegram import ReplyKeyboardMarkup
 import datetime
 import sqlite3
 
-
-
 global LOG_IN
 LOG_IN = False
 global NAME
@@ -84,7 +82,7 @@ def get_password(update, context):
             digit_OK = True
     if alpha_OK and ALPHA_OK and digit:
         try:
-            con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+            con = sqlite3.connect(".\\Filmobot_users.sqlite")
             cur = con.cursor()
             sql = '''insert into Filmobot_users (User_name, User_age, User_password) values (?, ?, ?)'''
 
@@ -118,7 +116,7 @@ def log_in(update, context):
 
 def check_base(update, context):
     global NAME
-    con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+    con = sqlite3.connect(".\\Filmobot_users.sqlite")
     cur = con.cursor()
     cur.execute("SELECT Id FROM Filmobot_users WHERE User_name=?", (update.message.text,))
     NAME = update.message.text
@@ -148,21 +146,26 @@ def check_password(update, context):
     global LOG_IN
     global AGE
     global NAME
-    con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+    con = sqlite3.connect(".\\Filmobot_users.sqlite")
     cur = con.cursor()
     cur.execute("SELECT User_password FROM Filmobot_users WHERE User_name=?", (NAME,))
 
     rows = cur.fetchall()
+    print(rows)
     if len(rows) == 1:
-        update.message.reply_text(
-            "Вход выполнен! Теперь пройдите опрос, чтобы понять какие фильмы Вам интересны. /choose_film")
-        cur = cur.execute("SELECT User_age FROM Filmobot_users WHERE User_name=?", (NAME,))
-        AGE = int(str(cur.fetchall()[0])[1:3])
-        print(AGE)
-        LOG_IN = True
-        return ConversationHandler.END
+        if update.message.text == rows[0][0]:
+            update.message.reply_text(
+                "Вход выполнен! Теперь пройдите опрос, чтобы понять какие фильмы Вам интересны. /choose_film")
+            cur = cur.execute("SELECT User_age FROM Filmobot_users WHERE User_name=?", (NAME,))
+            AGE = int(str(cur.fetchall()[0])[1:3])
+            print(AGE)
+            LOG_IN = True
+            return ConversationHandler.END
+        else:
+            update.message.reply_text('Вы ввели неправильный пароль, /start')
+            return  ConversationHandler.END
     elif len(rows) == 0:
-        update.message.reply_text("Вы ввели неправильный пароль или такого пароля не существует, попробуйте еще раз.")
+        update.message.reply_text("Такого пароля не существует, попробуйте еще раз. /start")
         return ConversationHandler.END
 
 
@@ -192,7 +195,7 @@ def comedy(update, context):
     if not LOG_IN:
         update.message.reply_text('Вы не вошли в систему /start')
         return ConversationHandler.END
-    con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+    con = sqlite3.connect(".\\Filmobot_users.sqlite")
     cur = con.cursor()
     G = 'Комедия'
     cur.execute("SELECT Film_name FROM Films WHERE Film_ganre=?", (G,))
@@ -212,7 +215,7 @@ def horror(update, context):
     if not LOG_IN:
         update.message.reply_text('Вы не вошли в систему /start')
         return ConversationHandler.END
-    con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+    con = sqlite3.connect(".\\Filmobot_users.sqlite")
     cur = con.cursor()
     G = 'Ужасы'
     cur.execute("SELECT Film_name FROM Films WHERE Film_ganre=?", (G,))
@@ -232,7 +235,7 @@ def dram(update, context):
     if not LOG_IN:
         update.message.reply_text('Вы не вошли в систему /start')
         return ConversationHandler.END
-    con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+    con = sqlite3.connect(".\\Filmobot_users.sqlite")
     cur = con.cursor()
     G = 'Драма'
     cur.execute("SELECT Film_name FROM Films WHERE Film_ganre=?", (G,))
@@ -257,7 +260,7 @@ def melodram(update, context):
     if not LOG_IN:
         update.message.reply_text('Вы не вошли в систему /start')
         return ConversationHandler.END
-    con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+    con = sqlite3.connect(".\\Filmobot_users.sqlite")
     cur = con.cursor()
     cur.execute("SELECT Film_name FROM Films WHERE Film_ganre=?", (GANRE,))
 
@@ -281,7 +284,7 @@ def thriller(update, context):
     if not LOG_IN:
         update.message.reply_text('Вы не вошли в систему /start')
         return ConversationHandler.END
-    con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+    con = sqlite3.connect(".\\Filmobot_users.sqlite")
     cur = con.cursor()
     cur.execute("SELECT Film_name FROM Films WHERE Film_ganre=?", (GANRE,))
 
@@ -306,7 +309,7 @@ def send_treller(update, context):
         update.message.reply_text('Вы не вошли в систему /start')
         return ConversationHandler.END
 
-    con = sqlite3.connect("C:\\Users\\user\\telegram_bot\\Filmobot_users.sqlite")
+    con = sqlite3.connect(".\\Filmobot_users.sqlite")
     cur = con.cursor()
     G = update.message.text
     if G in ['/Horror', '/Dram', '/Melodram', '/Comedy', '/Thriller', '/Logout']:
